@@ -19,22 +19,36 @@ const [type,...moduleName]=args;
 if(type==="create-module"){
 
 const routesJsonData=`[{
-    "path":"",  
+    "path":"", 
+    "method":"", 
     "action":"",
     "globalMiddlewares":[],
     "middlewares":[],
     "pathFromRoot":null
 }]`
 
+const controllerData=`module.exports={
+  controllerName:(req,res,next)=>{
+    //Your controller codes will go here
+  }
+}
+`
+const middlewareData=`module.exports={
+  middlewareName:(req,res,next)=>{
+    //Your middleware codes will go here
+  }
+}
+`
     if(fs.existsSync(path.join(basePath,'api'))){
         if(moduleName){
             for(let module of moduleName){
                 fs.mkdirSync(path.join(basePath,'api',`${module}`),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'controller'),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'middleware'),{recursive:true});
-                fs.writeFileSync(path.join(basePath,'api',`${module}`,'controller',`${module}.js`),"");
+                fs.mkdirSync(path.join(basePath,'api',`${module}`,'services'),{recursive:true});
+                fs.writeFileSync(path.join(basePath,'api',`${module}`,'controller',`${module}.js`),controllerData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'routes.json'),routesJsonData);
-                fs.writeFileSync(path.join(basePath,'api',`${module}`,'middleware',`${module}.js`),"");
+                fs.writeFileSync(path.join(basePath,'api',`${module}`,'middleware',`${module}.js`),middlewareData);
             }
             console.log(chalk.green(`Created ${moduleName} module sucessFully`));
         }else{
@@ -215,6 +229,102 @@ databaseJsonData=`{
        
     }
 }
+
+if(type==="create-api"){
+  let questions=[{
+    name:'moduleName',
+    type:'input',
+    message:'Enter the moduleName for the api',
+    validate:function(value){
+      if(value.length){
+        return true
+      }else{
+        return 'Enter the moduleName for the api'
+      }
+    }
+  },{
+    name:'method',
+    type:'list',
+    message:'Choose the method',
+    choices:['get','post','patch','delete','put'],
+    validate:function(value){
+      if(value.length){
+        return true
+      }else{
+        return 'Choose the method'
+      }
+    }
+  },{
+    name:'action',
+    type:'input',
+    message:'Enter the action for the api',
+    validate:function(value){
+      if(value.length){
+        return true
+      }else{
+        return 'Enter the action for userthe api'
+      }
+    }
+  },{
+    name:'middlewares',
+    type:'input',
+    message:'Enter the middleware for the api',
+    validate:function(value){
+      if(value.length){
+        return true
+      }else{
+        return 'Enter the middleware for the api'
+      }
+    }
+  },{
+    name:'endpoint',
+    type:'input',
+    message:'Enter the endpoint for the api',
+    validate:function(value){
+      if(value.length){
+        return true
+      }else{
+        return 'Enter the endpoint for the api'
+      }
+    }
+  },{
+    name:'pathFromRoot',
+    type:'confirm',
+    message:'Want the path from root',
+    default:false
+  }]
+  let api;
+  inquirer.prompt(questions).then(answer=>{
+    const {moduleName,method,action,middlewares,endpoint,pathFromRoot}=answer;
+    let res;
+    if(pathFromRoot){
+      res=true
+    }else{
+      res=false
+    }
+
+    let middlewareArray=middlewares.split(" ");
+    let newMiddlewareArray=[];
+    for(let middleware of middlewareArray){
+      newMiddlewareArray.push(`${moduleName}.${middleware}`);
+    }
+
+     api={
+      "path":endpoint,
+      "method":method,
+      "action":`${moduleName}.${action}`,
+      "middlewares":newMiddlewareArray,
+      "pathFromRoot":res
+      }
+   /*  const routeJsonFileData=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'routes.json'));
+    console.log(routeJsonFileData);  */   
+    const routes=require(path.join(basePath,'api',`${moduleName}`,'routes.json'))
+    routes.push(api);
+    fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'routes.json'),JSON.stringify(routes,null," "));
+  })
+}
+
+
 
 
 
