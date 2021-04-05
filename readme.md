@@ -45,4 +45,18 @@ $ framework create-module moduleName1 moduleName2 mmoduleName3 ...
 # Note: ModuleName should be separted by spaces
 ```
 
->The above command will create a module with three folder and a routes.json file. The three folder will be middleware,controller and services and every folder will contains afile with the dummy data inside it.You can change it according to your need
+>The above command will create a module with three folder and a routes.json file. The three folder will be middleware,controller and services and every folder will contains a file with the dummy data inside it.You can change it according to your need in future
+
+```bash
+$ framework create-api
+# For creating a new api
+# will Prompt the following questions 
+#Enter the moduleName for the api
+#Choose the method (i.e get,patch,post,put,delete)
+#Enter the action for the api (enter the controller function name here)
+#Enter the middleware for the api (enter the middleware name if more than then separated by space)
+#Enter the endpoint for the api
+#Want the path from root
+```
+
+>The above command will create a new api in the routes.json of that particular module ans also create the action,middleware function in controller and middleware files respectively that you have passed during propmt 
