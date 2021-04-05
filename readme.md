@@ -27,8 +27,22 @@ $ npm link
 ## Usage of Custom Command
 
 ```bash
-framework init
+$ framework init
 # will create the nodejs setup and install the following packages needed if the root doesn't contains any files or folder
 ```
 
 
+>The above command will create a nodejs setup for you and install the following npm packages automaticcaly while it is installing the package do not type `CTRL + C` on your terminal
+
+```bash
+$ framework create-module mouleName
+# Example framework create-module user
+# For creating a single module in the api folder
+
+$ framework create-module moduleName1 moduleName2 mmoduleName3 ...
+# Example: framework create-module user blog admin
+# For creating a multiple module at the same time
+# Note: ModuleName should be separted by spaces
+```
+
+>The above command will create a module with three folder and a routes.json file. The three folder will be middleware,controller and services and every folder will contains afile with the dummy data inside it.You can change it according to your need
