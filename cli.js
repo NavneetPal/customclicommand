@@ -18,35 +18,49 @@ const [type,...moduleName]=args;
 
 if(type==="create-module"){
 
+
+    if(fs.existsSync(path.join(basePath,'api'))){
+        if(moduleName){
+            for(let module of moduleName){
 const routesJsonData=`[{
-    "path":"", 
-    "method":"", 
-    "action":"",
+    "path":"/", 
+    "method":"get", 
+    "action":"${module}.controllerName",
     "globalMiddlewares":[],
-    "middlewares":[],
-    "pathFromRoot":null
+    "middlewares":["${module}.middlewareName"],
+    "pathFromRoot":true
 }]`
 
-const controllerData=`module.exports={
+const controllerData=`const {serviceName}= require('../services/demo')
+module.exports={
   controllerName:(req,res,next)=>{
     //Your controller codes will go here
+    res.send(serviceName());
   }
 }
 `
 const middlewareData=`module.exports={
   middlewareName:(req,res,next)=>{
     //Your middleware codes will go here
+    next();
   }
 }
-`
-    if(fs.existsSync(path.join(basePath,'api'))){
-        if(moduleName){
-            for(let module of moduleName){
+`               
+const serviceData=`module.exports={
+  serviceName:()=>{
+    //Your service codes will go here
+    return "service has been called"
+  }
+}
+`               
+
+
                 fs.mkdirSync(path.join(basePath,'api',`${module}`),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'controller'),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'middleware'),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'services'),{recursive:true});
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'controller',`${module}.js`),controllerData);
+                fs.writeFileSync(path.join(basePath,'api',`${module}`,'services',`demo.js`),serviceData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'routes.json'),routesJsonData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'middleware',`${module}.js`),middlewareData);
             }
@@ -296,13 +310,7 @@ if(type==="create-api"){
   let api;
   inquirer.prompt(questions).then(answer=>{
     const {moduleName,method,action,middlewares,endpoint,pathFromRoot}=answer;
-    let res;
-    if(pathFromRoot){
-      res=true
-    }else{
-      res=false
-    }
-
+    let res=pathFromRoot?true:false;
     let middlewareArray=middlewares.split(" ");
     let newMiddlewareArray=[];
     for(let middleware of middlewareArray){
@@ -316,11 +324,43 @@ if(type==="create-api"){
       "middlewares":newMiddlewareArray,
       "pathFromRoot":res
       }
-   /*  const routeJsonFileData=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'routes.json'));
-    console.log(routeJsonFileData);  */   
+   
     const routes=require(path.join(basePath,'api',`${moduleName}`,'routes.json'))
     routes.push(api);
     fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'routes.json'),JSON.stringify(routes,null," "));
+
+    //TODO: Create a controller function 
+
+    const fileData=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'controller',`${moduleName}.js`));
+  const dummyData=` ,
+  ${action}:(req,res,next)=>{
+     //Your code will go here
+  }
+}`
+    let fileString=fileData.toString();
+    const lastParanthesis=fileString.lastIndexOf('}')
+    fileString=fileString.slice(0,lastParanthesis);
+    fileString=fileString+dummyData;
+    fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'controller',`${moduleName}.js`),fileString);
+
+    //TODO: Create a middleware function
+    const fileData1=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${moduleName}.js`));
+    let dummyData1='';
+    for(let middleware of newMiddlewareArray){
+      let middlewareName=middleware.split('.')[1];
+      dummyData1+=` ,
+  ${middlewareName}:(req,res,next)=>{
+     //Your code will go here
+  }`
+    }
+    dummyData1+=`
+}`
+    let fileString1=fileData1.toString();
+    const lastParanthesis1=fileString1.lastIndexOf('}')
+    fileString1=fileString1.slice(0,lastParanthesis1);
+    fileString1=fileString1+dummyData1;
+    fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${moduleName}.js`),fileString1);
+
   })
 }
 
