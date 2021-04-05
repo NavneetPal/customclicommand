@@ -54,9 +54,9 @@ $ framework create-api
 #Enter the moduleName for the api
 #Choose the method (i.e get,patch,post,put,delete)
 #Enter the action for the api (enter the controller function name here)
-#Enter the middleware for the api (enter the middleware name if more than then separated by space)
+#Enter the middleware for the api (enter the middleware name  separated by space if you have more than one middleware)
 #Enter the endpoint for the api
 #Want the path from root
 ```
 
->The above command will create a new api in the routes.json of that particular module ans also create the action,middleware function in controller and middleware files respectively that you have passed during propmt 
+>The above command will create a new api in the routes.json of that particular module and also create the action,middleware function in controller and middleware files respectively that you have passed during propmt 
