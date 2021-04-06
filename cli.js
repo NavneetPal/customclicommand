@@ -31,11 +31,11 @@ const routesJsonData=`[{
     "pathFromRoot":true
 }]`
 
-const controllerData=`const {serviceName}= require('../services/demo')
+const controllerData=`
 module.exports={
   controllerName:(req,res,next)=>{
     //Your controller codes will go here
-    res.send(serviceName());
+    res.send(setup.services['${module}']['demo']['serviceName']());
   }
 }
 `
@@ -335,12 +335,20 @@ if(type==="create-api"){
   const dummyData=` ,
   ${action}:(req,res,next)=>{
      //Your code will go here
+     res.send('${action} page');
   }
 }`
+   const {...func}=require(path.join(basePath,'api',`${moduleName}`,'controller',`${moduleName}`));
     let fileString=fileData.toString();
     const lastParanthesis=fileString.lastIndexOf('}')
     fileString=fileString.slice(0,lastParanthesis);
-    fileString=fileString+dummyData;
+    // if function already exist then do not create it
+    if(func[`${action}`]){
+     fileString=fileString+`
+}`;
+    }else{
+     fileString=fileString+dummyData;
+    }
     fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'controller',`${moduleName}.js`),fileString);
 
     //TODO: Create a middleware function
@@ -351,6 +359,7 @@ if(type==="create-api"){
       dummyData1+=` ,
   ${middlewareName}:(req,res,next)=>{
      //Your code will go here
+     next();
   }`
     }
     dummyData1+=`

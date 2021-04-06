@@ -2,6 +2,8 @@
 
 This is the app for creating a nodejs setup fastly with the custom command.
 
+Documentaion for the project [Documentation](https://docs.google.com/document/d/1nvl6XyJ0tTe_qsHYRHrvis4ZsHNgcWNcEl2cZdB2WQ8/edit)
+
 
 ## Version: 1.3.3
 
