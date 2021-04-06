@@ -291,6 +291,17 @@ if(type==="create-api"){
       }
     }
   },{
+    name:'globalMiddlewares',
+    type:'input',
+    message:'Enter the global middleware for the api',
+    /* validate:function(value){
+      if(value.length){
+        return true
+      }else{
+        return 'Enter the middleware for the api'
+      }
+    } */
+  },{
     name:'endpoint',
     type:'input',
     message:'Enter the endpoint for the api',
@@ -309,7 +320,7 @@ if(type==="create-api"){
   }]
   let api;
   inquirer.prompt(questions).then(answer=>{
-    const {moduleName,method,action,middlewares,endpoint,pathFromRoot}=answer;
+    const {moduleName,method,action,middlewares,globalMiddlewares,endpoint,pathFromRoot}=answer;
     let res=pathFromRoot?true:false;
     let middlewareArray=middlewares.split(" ");
     let newMiddlewareArray=[];
@@ -317,10 +328,17 @@ if(type==="create-api"){
       newMiddlewareArray.push(`${moduleName}.${middleware}`);
     }
 
+    let globalMiddlewareArray=globalMiddlewares.split(" ");
+    let newGlobalMiddlewareArray=[];
+    for(let middleware of globalMiddlewareArray){
+      newGlobalMiddlewareArray.push(`middleware.${middleware}`);
+    }
+
      api={
       "path":endpoint,
       "method":method,
       "action":`${moduleName}.${action}`,
+      "globalMiddlewares":newGlobalMiddlewareArray,
       "middlewares":newMiddlewareArray,
       "pathFromRoot":res
       }
@@ -370,7 +388,34 @@ if(type==="create-api"){
     fileString1=fileString1+dummyData1;
     fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${moduleName}.js`),fileString1);
 
+
+
+    //TODO: Create a global Middlewares
+
+    const {...func2}=require(path.join(basePath,'Middleware','middleware'));
+    const fileData2=fs.readFileSync(path.join(basePath,'Middleware','middleware.js'));
+    let dummyData2='';
+    for(let middleware of newGlobalMiddlewareArray){
+      let middlewareName=middleware.split('.')[1];
+      if(!func2[`${middlewareName}`]){
+  dummyData2+=` ,
+  ${middlewareName}:(req,res,next)=>{
+      //Your code will go here
+      next();
+}`
+      }
+
+    }
+    dummyData2+=`
+}`
+    let fileString2=fileData2.toString();
+    const lastParanthesis2=fileString2.lastIndexOf('}')
+    fileString2=fileString2.slice(0,lastParanthesis2);
+    fileString2=fileString2+dummyData2;
+    fs.writeFileSync(path.join(basePath,'Middleware','middleware.js'),fileString2);
+    
     console.log(chalk.green('Created api successfully'));
+
   })
 }
 
