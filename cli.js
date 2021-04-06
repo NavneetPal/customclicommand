@@ -370,6 +370,7 @@ if(type==="create-api"){
     fileString1=fileString1+dummyData1;
     fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${moduleName}.js`),fileString1);
 
+    console.log(chalk.green('Created api successfully'));
   })
 }
 
