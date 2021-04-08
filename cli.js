@@ -6,6 +6,7 @@ const chalk=require('chalk');
 const download=require('download-git-repo');
 const Confirm=require('prompt-confirm');
 const inquirer=require('inquirer');
+const Spinner=require('cli-spinner').Spinner;
 
 //Grab provided args
 const[,,...args]=process.argv
@@ -72,12 +73,17 @@ const serviceData=`module.exports={
    
 }
 
+const githubrepoLink='https://github.com/NavneetPal/cybercomnodesetup'
 
 if(type==="init"){
+    let spinner=new Spinner('Creating the setup.... %s');
+    spinner.setSpinnerString('|/-\\');
+    spinner.start();
     if(moduleName.length!=0){
         console.log("Command not found(only write 'framework init')");
     }else{
-        download('direct:https://github.com/PriteeCybercom/Demo-Node.git#main',basePath,{clone:true}, function (err) {
+        download(`direct:${githubrepoLink}`,basePath,{clone:true}, function (err) {
+          spinner.stop(true);
     if(!err){
      let devusername="root";
      let devpassword=null;
@@ -101,7 +107,7 @@ let databaseJsonData=`{
     "dialect": "mysql"
   }
 }`
-      shell.cd(path.join(basePath));
+     // shell.cd(path.join(basePath));
       new Confirm({message:"Wants to configure db right now?",default:false}) .run()
       .then(answer=>{
         if(answer){
@@ -163,7 +169,17 @@ databaseJsonData=`{
 }
 }`
                 fs.writeFileSync(path.join(basePath,'config','database.json'),databaseJsonData);
-                shell.exec("npm install");
+                console.log(chalk.yellow('Installing the packages. Dont write Ctrl+C on terminal otherwise you have to manually install the packages.'));
+                let spinner=new Spinner('Instaling Packages.... %s');
+                spinner.setSpinnerString('|/-\\');
+                spinner.start();
+                shell.exec("npm install",(code,stdout,stderr)=>{
+                  spinner.stop(true);
+                  if(code===0)
+                  console.log(chalk.green('Successfully installed the packages'));
+                  else
+                  console.log(chalk.red(`Error occured during installing...${stderr}`))
+                });
               })
             }else{
               new Confirm({message:"Do you want to setup production env?(yes/no)",default:false}).run()
@@ -224,22 +240,55 @@ databaseJsonData=`{
   }
 }`
                   fs.writeFileSync(path.join(basePath,'config','database.json'),databaseJsonData);
-                  shell.exec("npm install");
+                  console.log(chalk.yellow('Installing the packages. Dont write Ctrl+C on terminal otherwise you have to manually install the packages.'))
+                  let spinner=new Spinner('Instaling Packages.... %s');
+                  spinner.setSpinnerString('|/-\\');
+                  spinner.start();
+                  shell.exec("npm install",(code,stdout,stderr)=>{
+                    spinner.stop(true);
+                    if(code===0)
+                     console.log(chalk.green('Successfully installed the packages'));
+                    else
+                     console.log(chalk.red(`Error occured during installing...${stderr}`))
+                  });
                   })
                 }else{
                   fs.writeFileSync(path.join(__dirname,'config','database.json'),databaseJsonData);
-                  shell.exec('npm install');
+
+                  console.log(chalk.yellow('Installing the packages. Dont write Ctrl+C on terminal otherwise you have to manually install the packages.'))
+                  let spinner=new Spinner('Instaling Packages.... %s');
+                  spinner.setSpinnerString('|/-\\');
+                  spinner.start();
+                  shell.exec("npm install",(code,stdout,stderr)=>{
+                    spinner.stop(true);
+                    if(code===0)
+                    console.log(chalk.green('Successfully installed the packages'));
+                    else
+                    console.log(chalk.red(`Error occured during installing...${stderr}`))
+                  });
                 }
               })
             }
           })
         }else{
           fs.writeFileSync(path.join(basePath,'config','database.json'),databaseJsonData);
-          shell.exec("npm install");
+          console.log(chalk.yellow('Installing the packages. Dont write Ctrl+C on terminal otherwise you have to manually install the packages.'))
+          let spinner=new Spinner('Instaling Packages.... %s');
+          spinner.setSpinnerString('|/-\\');
+          spinner.start();
+          shell.exec("npm install",(code,stdout,stderr)=>{
+            spinner.stop(true);
+            if(code===0)
+             console.log(chalk.green('Successfully installed the packages'));
+            else
+             console.log(chalk.red(`Error occured during installing...${stderr}`))
+          });
         }
       })
+    }else{
+      console.log(chalk.red('Error in downloading the folder structure'));
     }
-})
+    })
        
     }
 }
@@ -328,7 +377,7 @@ if(type==="create-api"){
     middlewares=middlewares.trim();
     globalMiddlewares=globalMiddlewares.trim();
     endpoint=endpoint.trim();
-
+    middlewares=middlewares.replace(/\s+/g," ");
 
 
     let res=pathFromRoot?true:false;
