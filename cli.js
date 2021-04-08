@@ -318,26 +318,12 @@ if(type==="create-api"){
     name:'moduleName',
     type:'list',
     message:'Select the module for the api',
-    choices:apis,
-    validate:function(value){
-      if(value.length){
-        return true
-      }else{
-        return 'Enter the moduleName for the api'
-      }
-    }
+    choices:apis
   },{
     name:'method',
     type:'list',
     message:'Choose the method',
-    choices:['get','post','patch','delete','put'],
-    validate:function(value){
-      if(value.length){
-        return true
-      }else{
-        return 'Choose the method'
-      }
-    }
+    choices:['get','post','patch','delete','put']
   },{
     name:'action',
     type:'input',
@@ -346,7 +332,7 @@ if(type==="create-api"){
       if(value.length){
         return true
       }else{
-        return 'Enter the action for userthe api'
+        return 'Enter the action for the api'
       }
     }
   },{
@@ -364,13 +350,6 @@ if(type==="create-api"){
     name:'globalMiddlewares',
     type:'input',
     message:'Enter the global middleware for the api',
-    /* validate:function(value){
-      if(value.length){
-        return true
-      }else{
-        return 'Enter the middleware for the api'
-      }
-    } */
   },{
     name:'endpoint',
     type:'input',
@@ -404,10 +383,12 @@ if(type==="create-api"){
     let res=pathFromRoot?true:false;
     
     let newMiddlewareArray=[];
+    //checking if the middlwares passed by the user is empty or not
+    //if not empty then we are creating the middlewares
     if(middlewares.length!=0){
       let middlewareArray=middlewares.split(" ");
       for(let middleware of middlewareArray){
-        newMiddlewareArray.push(`${moduleName}.${middleware}`);
+        newMiddlewareArray.push(`${middleware}`);
       }
     }
     
@@ -424,7 +405,7 @@ if(type==="create-api"){
     let api={
       "path":endpoint,
       "method":method,
-      "action":`${moduleName}.${action}`,
+      "action":`${action}`,
       "globalMiddlewares":newGlobalMiddlewareArray,
       "middlewares":newMiddlewareArray,
       "pathFromRoot":res
@@ -435,51 +416,80 @@ if(type==="create-api"){
     fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'routes.json'),JSON.stringify(routes,null," "));
 
     //TODO: Create a controller function 
-
-    const fileData=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'controller',`${moduleName}.js`));
-  const dummyData=` ,
-  ${action}:(req,res,next)=>{
-     //Your code will go here
-     res.send('${action} page');
+    const [controllerFileName,actionName]=action.split('.');
+    //if controllerFile doesn't exist then we will create it
+    //if it exist then we will append the function to it
+    if(!fs.existsSync(path.join(basePath,'api',`${moduleName}`,`controller`,`${controllerFileName}.js`))){
+      const dummyData=`module.exports={
+    ${actionName}:(req,res,next)=>{
+      //Your code will go here
+      res.send('${actionName} page');
+    }
+}
+`
+      fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,`controller`,`${controllerFileName}.js`),dummyData);
+    }else{
+      const fileData=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'controller',`${controllerFileName}.js`));
+      const dummyData=` ,
+  ${actionName}:(req,res,next)=>{
+      //Your code will go here
+      res.send('${action} page');
   }
 }`
-   const {...func}=require(path.join(basePath,'api',`${moduleName}`,'controller',`${moduleName}`));
-    let fileString=fileData.toString();
-    const lastParanthesis=fileString.lastIndexOf('}')
-    fileString=fileString.slice(0,lastParanthesis);
-    // if function already exist then do not create it
-    if(func[`${action}`]){
-     fileString=fileString+`
+       const {...func}=require(path.join(basePath,'api',`${moduleName}`,'controller',`${controllerFileName}`));
+        let fileString=fileData.toString();
+        const lastParanthesis=fileString.lastIndexOf('}')
+        fileString=fileString.slice(0,lastParanthesis);
+        // if function already exist then do not create it
+    if(func[`${actionName}`]){
+      fileString=fileString+`
 }`;
     }else{
-     fileString=fileString+dummyData;
+      fileString=fileString+dummyData;
     }
-    fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'controller',`${moduleName}.js`),fileString);
+        fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'controller',`${controllerFileName}.js`),fileString);
+    }
+
+
 
     //TODO: Create a middleware function
 
     //checking first if that middleware is empty or not if not empty then we will perform action otherwise no need
     if(newMiddlewareArray.length!=0){
-      const {...func1}=require(path.join(basePath,'api',`${moduleName}`,'middleware',`${moduleName}`));
-      const fileData1=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${moduleName}.js`));
-      let dummyData1='';
       for(let middleware of newMiddlewareArray){
-        let middlewareName=middleware.split('.')[1];
-        if(!func1[`${middlewareName}`]){
-    dummyData1+=` ,
-    ${middlewareName}:(req,res,next)=>{
-      //Your code will go here
-      next();
-  }`
-        }
+        let dummyData1='';
+        const[middlewareFileName,middlewareName]=middleware.split(".");
+
+        // if that file doesn't exist we will create it 
+        if(!fs.existsSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${middlewareFileName}.js`))){
+          const dummyData=`module.exports={
+          ${middlewareName}:(req,res,next)=>{
+            //Your code wiil go here
+            next();
+          }
       }
-    dummyData1+=`
+      `
+          fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${middlewareFileName}.js`),dummyData);
+        }else{
+          const {...func1}=require(path.join(basePath,'api',`${moduleName}`,'middleware',`${middlewareFileName}`));
+          const fileData1=fs.readFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${middlewareFileName}.js`));
+  
+          if(!func1[`${middlewareName}`]){
+      dummyData1+=` ,
+  ${middlewareName}:(req,res,next)=>{
+    //Your code will go here
+    next();
+  }`
+          }
+          dummyData1+=`
 }`
-      let fileString1=fileData1.toString();
-      const lastParanthesis1=fileString1.lastIndexOf('}')
-      fileString1=fileString1.slice(0,lastParanthesis1);
-      fileString1=fileString1+dummyData1;
-      fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${moduleName}.js`),fileString1);
+              let fileString1=fileData1.toString();
+              const lastParanthesis1=fileString1.lastIndexOf('}')
+              fileString1=fileString1.slice(0,lastParanthesis1);
+              fileString1=fileString1+dummyData1;
+              fs.writeFileSync(path.join(basePath,'api',`${moduleName}`,'middleware',`${middlewareFileName}.js`),fileString1);
+        }
+}
     }
 
 
