@@ -22,8 +22,14 @@ if(type==="create-module"){
 
     if(fs.existsSync(path.join(basePath,'api'))){
         if(moduleName){
+            let notCreated=[];
+            let created=[]
             for(let module of moduleName){
-const routesJsonData=`[{
+              if(!fs.existsSync(path.join(basePath,'api',module))){
+
+                created.push(module);
+
+  const routesJsonData=`[{
     "path":"/", 
     "method":"get", 
     "action":"${module}.controllerName",
@@ -54,8 +60,8 @@ const serviceData=`module.exports={
   }
 }
 `               
-
-
+              
+              
                 fs.mkdirSync(path.join(basePath,'api',`${module}`),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'controller'),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'middleware'),{recursive:true});
@@ -64,8 +70,16 @@ const serviceData=`module.exports={
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'services',`demo.js`),serviceData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'routes.json'),routesJsonData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'middleware',`${module}.js`),middlewareData);
+              }else{
+                notCreated.push(module);
+              }
             }
-            console.log(chalk.green(`Created ${moduleName} module sucessFully`));
+            if(created.length!=0){
+             console.log(chalk.green(`Created ${created} module sucessFully`));
+            }
+            if(notCreated.length!=0){
+              console.log(chalk.bgYellow.black('WARN:')+`Not created `+ chalk.yellow(`${notCreated}`) +` module because the module already exist`)
+            }
         }else{
             console.log("Please enter the module-name");
         }
