@@ -308,10 +308,17 @@ databaseJsonData=`{
 }
 
 if(type==="create-api"){
+ 
+  const apis=fs.readdirSync(path.join(basePath,'api'),{withFileTypes:true})
+  .filter((dirent)=>dirent.isDirectory())
+  .map((dirent)=>dirent.name);
+
+
   let questions=[{
     name:'moduleName',
-    type:'input',
-    message:'Enter the moduleName for the api',
+    type:'list',
+    message:'Select the module for the api',
+    choices:apis,
     validate:function(value){
       if(value.length){
         return true
