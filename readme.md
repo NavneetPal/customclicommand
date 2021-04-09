@@ -69,7 +69,7 @@ $ framework create-api
 $ framework create-middleware
 # will prompt the following questions
 # Choose the options: Module Middleware or GlobalMiddleware
-# If user choose module Middleware will get the module name for selecting the module
+# If user choose module Middleware will get the list of module name for selecting the module
 # Enter the middlewareName in format fileName.middlewareName
 
 
