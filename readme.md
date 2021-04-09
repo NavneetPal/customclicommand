@@ -62,3 +62,18 @@ $ framework create-api
 ```
 
 >The above command will create a new api in the routes.json of that particular module and also create the action,middleware function in controller and middleware files respectively that you have passed during propmt 
+
+
+
+```bash
+$ framework create-middleware
+# will prompt the following questions
+# Choose the options: Module Middleware or GlobalMiddleware
+# If user choose module Middleware will get the module name for selecting the module
+# Enter the middlewareName in format fileName.middlewareName
+
+
+# If user choose the global Middleware
+# then user have to enter the global Middlewrae name in format fileName.middlewareName
+```
+>The above command will create a middlewarefunction in the module middleware of apis folder if user chooses the moduleMiddleware option and if user chooses the globalMiddleware option then the command will create a function in the particular file specified by the user.If it already exist in that particular file then the function will not be created.
