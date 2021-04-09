@@ -327,29 +327,29 @@ if(type==="create-api"){
   },{
     name:'action',
     type:'input',
-    message:'Enter the action for the api',
+    message:'Enter the action for the api in these format(fileName.actionName)',
     validate:function(value){
       if(value.length){
         return true
       }else{
-        return 'Enter the action for the api'
+        return 'Enter the action for the api in these format(fileName.actionName)'
       }
     }
   },{
     name:'middlewares',
     type:'input',
-    message:'Enter the middleware for the api',
+    message:'Enter the middleware for the api in these format(fileName.middlewareName)',
     validate:function(value){
       if(value.length){
         return true
       }else{
-        return 'Enter the middleware for the api'
+        return 'Enter the middleware for the api in these format(fileName.middlewareName)'
       }
     }
   },{
     name:'globalMiddlewares',
     type:'input',
-    message:'Enter the global middleware for the api',
+    message:'Enter the global middleware for the api in these format(fileName.globalMiddlewareName)',
   },{
     name:'endpoint',
     type:'input',
@@ -581,7 +581,8 @@ if(type==="create-middleware"){
 
 
        let middlewareNameArray=middlewareName.split(" ");
-       console.log(middlewareNameArray)
+       let notCreated=[];
+       let created=[];
        for(let middleware of middlewareNameArray){
          const [middlewareFile,middlewareFunction]=middleware.split('.');
          if(!fs.existsSync(path.join(basePath,'api',`${module}`,'middleware',`${middlewareFile}.js`))){
@@ -597,13 +598,14 @@ if(type==="create-middleware"){
           const {...func2}=require(path.join(basePath,'api',`${module}`,'middleware',`${middlewareFile}`));
           const fileData2=fs.readFileSync(path.join(basePath,'api',`${module}`,'middleware',`${middlewareFile}.js`));
           let dummyData2='';
+
           if(!func2[`${middlewareFunction}`]){
+            created.push(middlewareFunction);
   dummyData2+=`  ,
   ${middlewareFunction}:(req,res,next)=>{
       //Your code will go here
       next();
   }`
-          }
   dummyData2+=`
 }`
               let fileString2=fileData2.toString();
@@ -611,9 +613,18 @@ if(type==="create-middleware"){
               fileString2=fileString2.slice(0,lastParanthesis2);
               fileString2=fileString2+dummyData2;
               fs.writeFileSync(path.join(basePath,'api',`${module}`,'middleware',`${middlewareFile}.js`),fileString2);
+          }else{
+            notCreated.push(middlewareFunction);
+          }
          }
        }
-       console.log(chalk.green('Created middleware sucessfully'));
+       if(created.length!=0){
+         console.log(chalk.green(`Created ${created} middleware sucessfully`));
+       }
+       if(notCreated.length!=0){
+        console.log(chalk.red(`Unable to create ${notCreated} because they already exist in the file`))
+       }
+
       })
     }
     if(option==='Global Middleware'){
@@ -633,7 +644,9 @@ if(type==="create-middleware"){
         let {middlewareName}=answer;
         middlewareName=middlewareName.trim();
         middlewareName=middlewareName.replace(/\s+/g," ");
-
+        
+        let created=[];
+        let notCreated=[];
         let middlewareNameArray=middlewareName.split(" ");
         for(let middleware of middlewareNameArray){
 
@@ -651,22 +664,30 @@ if(type==="create-middleware"){
             const fileData2=fs.readFileSync(path.join(basePath,'Middleware',`${fileName}.js`));
             let dummyData2='';
             if(!func2[`${globalMiddlewareFunction}`]){
+              created.push(globalMiddlewareFunction);
  dummyData2+=`  ,
    ${globalMiddlewareFunction}:(req,res,next)=>{
     //Your code will go here
     next();
    }`
-            }
-dummyData2+=`
+   dummyData2+=`
 }`
                 let fileString2=fileData2.toString();
                 const lastParanthesis2=fileString2.lastIndexOf('}');
                 fileString2=fileString2.slice(0,lastParanthesis2);
                 fileString2=fileString2+dummyData2;
                 fs.writeFileSync(path.join(basePath,'Middleware',`${fileName}.js`),fileString2);
+            }else{
+              notCreated.push(globalMiddlewareFunction);
+            }
           }
         }
-        console.log(chalk.green(`Created global middleware successfully`));
+        if(created.length!=0){
+          console.log(chalk.green(`Created ${created} middleware successfully`));
+        }
+        if(notCreated.length!=0){
+          console.log(chalk.red(`Not created ${notCreated} middleware because it already exist`));
+        }
       })
     }
   })
