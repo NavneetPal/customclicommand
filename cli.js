@@ -16,6 +16,25 @@ let basePath=process.cwd();
 
 const [type,...moduleName]=args;
 
+if(!type){
+  console.log('Available Commands');
+  console.log('Commmands:');
+  console.log();
+  console.log('framework init                    -initialize the node.js setup');
+  console.log('framework create-module           -Create the module in the apis folder');
+  console.log('framework create-api              -Used to create a api in a particular module');
+  console.log('framework create-middleware       -Used to create a middleware in module folder or global Middleware folder');
+}
+
+if(type==="--help"){
+  console.log('Available Commands');
+  console.log('Commmands:');
+  console.log();
+  console.log('framework init                    -initialize the node.js setup');
+  console.log('framework create-module           -Create the module in the apis folder');
+  console.log('framework create-api              -Used to create a api in a particular module');
+  console.log('framework create-middleware       -Used to create a middleware in module folder or global Middleware folder');
+}
 
 if(type==="create-module"){
 
