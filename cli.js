@@ -9,7 +9,9 @@ const inquirer=require('inquirer');
 const Spinner=require('cli-spinner').Spinner;
 
 //Grab provided args
-const[,,...args]=process.argv
+const[,,...args]=process.argv;
+
+
 
 //Holding the path of the current working directory
 let basePath=process.cwd();
@@ -78,15 +80,22 @@ const serviceData=`module.exports={
     return "service has been called"
   }
 }
-`               
+`        
+const functionData=`module.exports={
+  functionName:()=>{
+    return 'Your function data';
+  }
+}`       
               
               
                 fs.mkdirSync(path.join(basePath,'api',`${module}`),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'controller'),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'middleware'),{recursive:true});
                 fs.mkdirSync(path.join(basePath,'api',`${module}`,'services'),{recursive:true});
+                fs.mkdirSync(path.join(basePath,'api',`${module}`,'functions'),{recursive:true});
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'controller',`${module}.js`),controllerData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'services',`demo.js`),serviceData);
+                fs.writeFileSync(path.join(basePath,'api',`${module}`,'functions',`${module}.js`),functionData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'routes.json'),routesJsonData);
                 fs.writeFileSync(path.join(basePath,'api',`${module}`,'middleware',`${module}.js`),middlewareData);
               }else{
