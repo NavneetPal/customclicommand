@@ -838,7 +838,11 @@ if(type==="create-middleware"){
           routes.forEach(route=>{
             if(route.path===endPointPath && route.method===method && route.action===action){
               if(route['middlewares']){
-                route['middlewares'].push(...middlewareNameArray);
+                for(let middleware of middlewareNameArray){
+                  if(!route[`middlewares`].includes(middleware)){
+                    route['middlewares'].push(middleware);
+                  }
+                }
               }else{
                 route['middlewares']=middlewareNameArray;
               }
@@ -976,7 +980,11 @@ if(type==="create-middleware"){
           routes.forEach(route=>{
             if(route.path===endPointPath && route.method===method && route.action===action){
               if(route['globalMiddlewares']){
-                route['globalMiddlewares'].push(...middlewareNameArray);
+                for(let middleware of middlewareNameArray){
+                  if(!route[`globalMiddlewares`].includes(middleware)){
+                    route['globalMiddlewares'].push(middleware);
+                  }
+                }
               }else{
                 route['globalMiddlewares']=middlewareNameArray;
               }
