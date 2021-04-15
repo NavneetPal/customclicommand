@@ -15,7 +15,8 @@ const {
     init,
     createApi,
     createMiddleware,
-    createModule
+    createModule,
+    createService
 }=require('./index');
 
 program 
@@ -52,6 +53,14 @@ program
     .description('Create a new module in the apis')
     .action((moduleName)=>{
         createModule(basePath,moduleName);
+    })
+
+program
+    .command('create-service')
+    .alias('cs')
+    .description('Create a service for the specific moule')
+    .action(()=>{
+      createService(basePath);
     })
 
 

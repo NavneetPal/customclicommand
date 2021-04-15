@@ -8,6 +8,27 @@ const shell=require('shelljs');
 const download=require('download-git-repo');
 const githubrepoLink='https://github.com/NavneetPal/cybercomnodesetup'
 
+const giveApis=(basePath)=>{
+    return fs.readdirSync(path.join(basePath,'api'),{withFileTypes:true})
+    .filter((dirent)=>dirent.isDirectory())
+    .map((dirent)=>dirent.name);
+}
+
+const correctFormat=(name)=>{
+    name=name.trim();
+    name=name.replace(/\s+/g," ");
+    let nameArray=name.split(" ");
+    let correctNameFormat=true
+    for(let names of nameArray){
+        let middlewareArray=names.split('.');
+        if(middlewareArray.length!==2 || !middlewareArray[0] || !middlewareArray[1]){
+            return false;
+        }
+    }
+    return correctNameFormat;
+}
+
+
 const init=(basePath)=>{
     let spinner=new Spinner('Creating the setup.... %s');
     spinner.setSpinnerString('|/-\\');
@@ -650,9 +671,7 @@ const createMiddleware=(basePath)=>{
     }]).then(answer=>{
         const {option}=answer;
         if(option==='Module Middleware'){
-        const apis=fs.readdirSync(path.join(basePath,'api'),{withFileTypes:true})
-        .filter((dirent)=>dirent.isDirectory())
-        .map((dirent)=>dirent.name);
+        const apis=giveApis(basePath);
     
         let questions=[{
             type:'list',
@@ -1004,12 +1023,101 @@ const functionData=`module.exports={
     }
 }
 
+const createService=(basePath)=>{
+    const apis=giveApis(basePath);
 
+    let questions=[{
+        message:'Select the module',
+        type:'list',
+        name:'module',
+        choices:apis
+    },{
+        message:'Enter the service (fileName.serviceName)',
+        type:'input',
+        name:'service',
+        validate:function(value){
+            if(value.length){
+                return true
+            }else{
+                return 'Enter the service (fileName.midllewareName)'
+            }
+        }
+    }]
+    inquirer.prompt(questions).then(answer=>{
+        console.log(answer);
+        let {module,service}=answer;
+        if(correctFormat(service)){
+            service=service.trim();
+            service=service.replace(/\s+/g," ");
+            const serviceArray=service.split(" ");
+            let created=[];
+            let notCreated=[];
+            for(let service of serviceArray){
+                const [serviceFile,serviceName]=service.split('.');
+                let filePath=path.join(basePath,'api',module,'services',`${serviceFile}.js`);
+                if(!fs.existsSync(path.join(basePath,'api',module,'services',`${serviceFile}.js`))){
+                    created.push(serviceName);
+                    createServiceFile(filePath,serviceName);
+                }else{
+                   let[create,notCreate]=appendFunction(filePath,serviceName);
+                   created.push(...create);
+                   notCreated.push(...notCreate);
+                }
+            }
+            if(created.length!=0){
+                console.log(chalk.green(`Successfully created ${created} services `));
+            }
+            if(notCreated.length!=0){
+                console.log(chalk.bgYellow.black('WARN:')+`Not created ${notCreated} services bcz already exist`);
+            }
+        }else{
+            console.log(chalk.bgRed('ERROR:')+'Service is not in correct Format');
+        }
+    })
+}
+
+
+const createServiceFile=(filePath,functionName)=>{
+let dummy=`module.exports={
+  ${functionName}:()=>{
+      //Your code will go here
+      return ('Your code here');
+  }
+}`
+    fs.writeFileSync(filePath,dummy);
+}
+
+const appendFunction=(filePath,functionName)=>{
+        let created=[];
+        let notCreated=[];
+        const {...func2}=require(filePath);
+        const fileData2=fs.readFileSync(filePath);
+        let dummyData2='';
+        if(!func2[`${functionName}`]){
+            created.push(functionName);
+dummyData2+=`  ,
+  ${functionName}:(req,res,next)=>{
+  //Your code will go here
+      return('Your code will come here');
+  }`
+dummyData2+=`
+}`
+            let fileString2=fileData2.toString();
+            const lastParanthesis2=fileString2.lastIndexOf('}');
+            fileString2=fileString2.slice(0,lastParanthesis2);
+            fileString2=fileString2+dummyData2;
+            fs.writeFileSync(filePath,fileString2);
+        }else{
+            notCreated.push(functionName);
+        }
+        return [created,notCreated];
+}
 
 
 module.exports={
     init,
     createApi,
     createMiddleware,
-    createModule
+    createModule,
+    createService
 }
