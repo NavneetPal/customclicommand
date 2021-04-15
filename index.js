@@ -1057,7 +1057,7 @@ const createService=(basePath)=>{
                 let filePath=path.join(basePath,'api',module,'services',`${serviceFile}.js`);
                 if(!fs.existsSync(path.join(basePath,'api',module,'services',`${serviceFile}.js`))){
                     created.push(serviceName);
-                    createServiceFile(filePath,serviceName);
+                    createFile(filePath,serviceName);
                 }else{
                    let[create,notCreate]=appendFunction(filePath,serviceName);
                    created.push(...create);
@@ -1076,8 +1076,129 @@ const createService=(basePath)=>{
     })
 }
 
+const createFunction=(basePath)=>{
+    let questions=[{
+        message:'select the option',
+        name:'option',
+        type:'list',
+        choices:['Module Function','Global Function']
+    }]
 
-const createServiceFile=(filePath,functionName)=>{
+    inquirer.prompt(questions).then(answer=>{
+        const {option}=answer;
+        if(option==='Module Function'){
+            
+            let questions=[{
+                message:'Choose the module',
+                name:'module',
+                type:'list',
+                choices:giveApis(basePath)
+            },{
+                message:'Enter the function Name (fileName.functionName)',
+                name:'functionName',
+                type:'input',
+                validate:function(value){
+                    if(value.length){
+                        return true;
+                    }else{
+                        return 'Enter the function Name (fileName.functionName)'
+                    }
+                }
+            }]
+            inquirer.prompt(questions).then(answer=>{
+                let {module,functionName}=answer;
+
+                if(correctFormat(functionName)){
+                  functionName=functionName.trim();
+                  functionName=functionName.replace(/\s+/g," ");
+                  
+                  let functionArray=functionName.split(" ");
+                  let created=[];
+                  let notCreated=[];
+                  for(let eachFunction of functionArray){
+                      const [functionFile,functionName]=eachFunction.split('.');
+                      let filePath=path.join(basePath,'api',module,'functions',`${functionFile}.js`);
+                      if(!fs.existsSync(filePath)){
+                          created.push(functionName);
+                          createFile(filePath,functionName);
+                      }else{
+                         let[create,notCreate]=appendFunction(filePath,functionName);
+                         created.push(...create);
+                         notCreated.push(...notCreate);
+                      }
+                  }
+                  if(created.length!=0){
+                    console.log(chalk.green(`Successfully created ${created} functions `));
+                  }
+                  if(notCreated.length!=0){
+                      console.log(chalk.bgYellow.black('WARN:')+`Not created ${notCreated} function bcz already exist`);
+                  }
+                }else{
+                    console.log(chalk.bgRed('ERROR: ')+'Function Name is not in correct format')
+                }
+
+            })
+        }
+        if(option==='Global Function'){
+            //TODO: will create the logic for global function
+            let question=[{
+                message:'Enter the functionName (folderName.anotherfolderName.fileName.functionName)',
+                type:'input',
+                name:'functionName',
+                validate:function(value){
+                    if(value.length){
+                        return true;
+                    }else{
+                        return 'Enter the functionName (folderName.anotherfolderName.fileName.functionName)'
+                    }
+                }
+            }]
+
+            inquirer.prompt(question).then(answer=>{
+                console.log(answer);
+                let {functionName}=answer;
+                const functionArray=functionName.split('.');
+                if(functionArray.length===2){
+                    const [functionFile,functionName]=functionArray;
+                    let functionPath=path.join(basePath,'functions',`${functionFile}.js`);
+                    if(!fs.existsSync(functionPath)){
+                        createFile(functionPath,functionName);
+                    }else{
+                        appendFunction(functionPath,functionName);
+                    }
+                }else{
+                    let newPath=path.join(basePath,'functions');
+                    let n=functionArray.length;
+                    for(let i=0;i<n-1;i++){
+                        if(i===n-2){
+                            console.log(newPath)
+                          newPath=path.join(newPath,`${functionArray[i]}.js`);
+                          console.log(newPath);
+                          if(!fs.existsSync(newPath)){
+                                createFile(newPath,functionArray[n-1]); 
+                          }else{
+                             appendFunction(newPath,functionArray[n-1]);
+                          }
+                        }else{
+                           newPath=path.join(newPath,functionArray[i]);
+                           console.log(newPath);
+                            if(!fs.existsSync(newPath)){
+                                console.log('hello');
+                                if(fs.statSync(newPath).isDirectory()===true){
+                                    fs.mkdirSync(newPath);
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            });
+        }
+    })
+}
+
+
+const createFile=(filePath,functionName)=>{
 let dummy=`module.exports={
   ${functionName}:()=>{
       //Your code will go here
@@ -1119,5 +1240,6 @@ module.exports={
     createApi,
     createMiddleware,
     createModule,
-    createService
+    createService,
+    createFunction
 }
