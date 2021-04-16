@@ -1024,54 +1024,110 @@ const functionData=`module.exports={
 }
 
 const createService=(basePath)=>{
-    const apis=giveApis(basePath);
-
-    let questions=[{
-        message:'Select the module',
+    let question=[{
+        message:'Select the option',
+        name:'option',
         type:'list',
-        name:'module',
-        choices:apis
-    },{
-        message:'Enter the service (fileName.serviceName)',
-        type:'input',
-        name:'service',
-        validate:function(value){
-            if(value.length){
-                return true
-            }else{
-                return 'Enter the service (fileName.midllewareName)'
-            }
-        }
+        choices:['Module Service','Global Service']
     }]
-    inquirer.prompt(questions).then(answer=>{
-        console.log(answer);
-        let {module,service}=answer;
-        if(correctFormat(service)){
-            service=service.trim();
-            service=service.replace(/\s+/g," ");
-            const serviceArray=service.split(" ");
-            let created=[];
-            let notCreated=[];
-            for(let service of serviceArray){
-                const [serviceFile,serviceName]=service.split('.');
-                let filePath=path.join(basePath,'api',module,'services',`${serviceFile}.js`);
-                if(!fs.existsSync(path.join(basePath,'api',module,'services',`${serviceFile}.js`))){
-                    created.push(serviceName);
-                    createFile(filePath,serviceName);
-                }else{
-                   let[create,notCreate]=appendFunction(filePath,serviceName);
-                   created.push(...create);
-                   notCreated.push(...notCreate);
+
+    inquirer.prompt(question).then(answer=>{
+        const {option}=answer;
+        if(option==='Module Service'){
+            let questions=[{
+                message:'Select the module',
+                type:'list',
+                name:'module',
+                choices:giveApis(basePath)
+            },{
+                message:'Enter the service (fileName.serviceName)',
+                type:'input',
+                name:'service',
+                validate:function(value){
+                    if(value.length){
+                        return true
+                    }else{
+                        return 'Enter the service (fileName.midllewareName)'
+                    }
                 }
+            }]
+            inquirer.prompt(questions).then(answer=>{
+                let {module,service}=answer;
+                if(correctFormat(service)){
+                    service=service.trim();
+                    service=service.replace(/\s+/g," ");
+                    const serviceArray=service.split(" ");
+                    let created=[];
+                    let notCreated=[];
+                    for(let service of serviceArray){
+                        const [serviceFile,serviceName]=service.split('.');
+                        let filePath=path.join(basePath,'api',module,'services',`${serviceFile}.js`);
+                        if(!fs.existsSync(path.join(basePath,'api',module,'services',`${serviceFile}.js`))){
+                            created.push(serviceName);
+                            createFile(filePath,serviceName);
+                        }else{
+                           let[create,notCreate]=appendFunction(filePath,serviceName);
+                           created.push(...create);
+                           notCreated.push(...notCreate);
+                        }
+                    }
+                    if(created.length!=0){
+                        console.log(chalk.green(`Successfully created ${created} services `));
+                    }
+                    if(notCreated.length!=0){
+                        console.log(chalk.bgYellow.black('WARN:')+`Not created ${notCreated} services bcz already exist`);
+                    }
+                }else{
+                    console.log(chalk.bgRed('ERROR:')+'Service is not in correct Format');
+                }
+            })
+        }
+        if(option==='Global Service'){
+            if(!fs.existsSync(path.join(basePath,'services'))){
+                fs.mkdirSync(path.join(basePath,'services'));
             }
-            if(created.length!=0){
-                console.log(chalk.green(`Successfully created ${created} services `));
-            }
-            if(notCreated.length!=0){
-                console.log(chalk.bgYellow.black('WARN:')+`Not created ${notCreated} services bcz already exist`);
-            }
-        }else{
-            console.log(chalk.bgRed('ERROR:')+'Service is not in correct Format');
+            let question=[{
+                message:'Enter service (fileName.serviceName fileName.serviceName ...)',
+                type:'input',
+                name:'service',
+                validate:function(value){
+                    if(value.length){
+                        return true;
+                    }else{
+                        return 'Enter service (fileName.serviceName fileName.serviceName ...)';
+                    }
+                }
+            }]
+            inquirer.prompt(question).then(answer=>{
+                let {service}=answer;
+                if(correctFormat(service)){
+                    service=service.trim();
+                    service=service.replace(/\s+/g," ");
+                    const serviceArray=service.split(" ");
+                    let created=[];
+                    let notCreated=[];
+                    for(let service of serviceArray){
+                        const [serviceFile,serviceName]=service.split('.');
+                        let filePath=path.join(basePath,'services',`${serviceFile}.js`);
+                        if(!fs.existsSync(filePath)){
+                            created.push(serviceName);
+                            createFile(filePath,serviceName);
+                        }else{
+                           let[create,notCreate]=appendFunction(filePath,serviceName);
+                           created.push(...create);
+                           notCreated.push(...notCreate);
+                        }
+                    }
+                    if(created.length!=0){
+                        console.log(chalk.green(`Successfully created ${created} services `));
+                    }
+                    if(notCreated.length!=0){
+                        console.log(chalk.bgRed('ERROR:')+`Not created ${notCreated} services bcz already exist`);
+                    }
+                }else{
+                    console.log(chalk.bgRed('ERROR: ')+'service is not in proper format')
+                }
+            })
         }
     })
 }
@@ -1140,7 +1196,6 @@ const createFunction=(basePath)=>{
             })
         }
         if(option==='Global Function'){
-            //TODO: will create the logic for global function
             let question=[{
                 message:'Enter the functionName (folderName.anotherfolderName.fileName.functionName)',
                 type:'input',
@@ -1155,43 +1210,61 @@ const createFunction=(basePath)=>{
             }]
 
             inquirer.prompt(question).then(answer=>{
-                console.log(answer);
                 let {functionName}=answer;
-                const functionArray=functionName.split('.');
-                if(functionArray.length===2){
-                    const [functionFile,functionName]=functionArray;
-                    let functionPath=path.join(basePath,'functions',`${functionFile}.js`);
-                    if(!fs.existsSync(functionPath)){
-                        createFile(functionPath,functionName);
-                    }else{
-                        appendFunction(functionPath,functionName);
-                    }
-                }else{
-                    let newPath=path.join(basePath,'functions');
-                    let n=functionArray.length;
-                    for(let i=0;i<n-1;i++){
-                        if(i===n-2){
-                            console.log(newPath)
-                          newPath=path.join(newPath,`${functionArray[i]}.js`);
-                          console.log(newPath);
-                          if(!fs.existsSync(newPath)){
-                                createFile(newPath,functionArray[n-1]); 
-                          }else{
-                             appendFunction(newPath,functionArray[n-1]);
-                          }
+                if(correctGlobalFunctionFormat(functionName)){
+                    functionName=functionName.trim();
+                    functionName=functionName.replace(/\s+/g," ");
+                    let functionNameArray=functionName.split(" ");
+                    let created=[];
+                    let notCreated=[];
+                    for(let eachFunctionName of functionNameArray){
+                        const functionArray=eachFunctionName.split('.');
+                        if(functionArray.length===2){
+                            const [functionFile,functionName]=functionArray;
+                            let functionPath=path.join(basePath,'functions',`${functionFile}.js`);
+                            if(!fs.existsSync(functionPath)){
+                                created.push(functionName);
+                                createFile(functionPath,functionName);
+                            }else{
+                               let [create,notCreate]=appendFunction(functionPath,functionName);
+                               created.push(...create);
+                               notCreated.push(...notCreate);
+                            }
                         }else{
-                           newPath=path.join(newPath,functionArray[i]);
-                           console.log(newPath);
-                            if(!fs.existsSync(newPath)){
-                                console.log('hello');
-                                if(fs.statSync(newPath).isDirectory()===true){
-                                    fs.mkdirSync(newPath);
+                            let newPath=path.join(basePath,'functions');
+                            let n=functionArray.length;
+                            for(let i=0;i<n-1;i++){
+                                if(i===n-2){
+                                
+                                newPath=path.join(newPath,`${functionArray[i]}.js`);
+                           
+                                if(!fs.existsSync(newPath)){
+                                    created.push(functionArray[n-1]);
+                                    createFile(newPath,functionArray[n-1]); 
+                                }else{
+                                   let[create,notCreate]=appendFunction(newPath,functionArray[n-1]);
+                                   created.push(...create);
+                                   notCreated.push(...notCreate);
+                                }
+                                }else{
+                                    newPath=path.join(newPath,functionArray[i]);
+                                    if(!fs.existsSync(newPath)){
+                                        fs.mkdirSync(newPath);
+                                    } 
                                 }
                             }
-                            
                         }
                     }
+                    if(created.length!=0){
+                        console.log(chalk.green(`Successfully created ${created} functions `));
+                    }
+                    if(notCreated.length!=0){
+                        console.log(chalk.bgYellow.black('WARN:')+`Not created ${notCreated} function bcz already exist`);
+                    }
+                }else{
+                    console.log(chalk.bgRed('ERROR: ')+'You have not written the function in correct format')
                 }
+                
             });
         }
     })
@@ -1232,6 +1305,21 @@ dummyData2+=`
             notCreated.push(functionName);
         }
         return [created,notCreated];
+}
+
+const correctGlobalFunctionFormat=(functionName)=>{
+   functionName=functionName.trim();
+   functionName=functionName.replace(/\s+/g," ");
+    let correctFormat=true;
+    let functionArray=functionName.split(".");
+    if(functionArray.length<2)
+     return false;
+    for(let eachFunction of functionArray){
+        if(!eachFunction){
+            return false;
+        }
+    }
+    return correctFormat;
 }
 
 

@@ -59,7 +59,7 @@ program
 program
     .command('create-service')
     .alias('cs')
-    .description('Create a service for the specific moule')
+    .description('Create a module/global services')
     .action(()=>{
       createService(basePath);
     })

@@ -21,10 +21,16 @@ $ npm link
 >You can get the package for the same on npm [@navneet1998/customcmd](https://www.npmjs.com/package/@navneet1998/customcmd) Install it as global package
 
 **Custom Command**
-
-1. framework init
-2. framework create-module moduleName **Or** framework create-module moduleName1 moduleName2 ....
-3. framework create-api
+```
+Commands:
+  init|i                            Initializes the nodejs setup
+  create-api|a                      Create api for the particular module
+  create-middleware|m               Create a module/global middleware for the specific endpoint
+  create-module|cm <moduleName...>  Create a new module in the apis
+  create-service|cs                 Create a module/global services
+  create-function|cf                Create a module/global function
+  help [command]                    display help for command
+```
 
 ## Usage of Custom Command
 
@@ -77,3 +83,47 @@ $ framework create-middleware
 # then user have to enter the global Middlewrae name in format fileName.middlewareName
 ```
 >The above command will create a middlewarefunction in the module middleware of apis folder if user chooses the moduleMiddleware option and if user chooses the globalMiddleware option then the command will create a function in the particular file specified by the user.If it already exist in that particular file then the function will not be created.
+
+```bash
+$ framework create-service
+# the following question will be prompted: Wants to create global srvice or module service
+# the enter fileName.serviceName for the service that you want to make
+```
+
+>The above command will create a service on the basis of your choices whether you wnat to kae it global service or module service
+NOTE: if you want to add more that one services at a time then they shoul be separted by spaces
+
+```bash
+$ framework create-function
+# the following command will create a module fiunction or global function on tyour choice
+# NOTE: if you are making global function then the format will be folderName.anotherFolderName.fileName.functionName
+# if you want to create a file in roots functions folder then write fileName.functionName
+```
+
+>The above command will create a local function or golobal function on your choices. When you are creating a local function then the syntax for specifying the function Name is fileName.functionName and when it comes to the global function then the syntax will vary where you want to add that function so the basic synax will be first specify the folder then the fileName then the functionName.
+
+```bash
+$ framework --help
+# Output 
+Usage: cli [options] [command]
+
+Node setup Management
+
+Options:
+  -V, --version                     output the version number
+  -h, --help                        display help for command
+
+Commands:
+  init|i                            Initializes the nodejs setup
+  create-api|a                      Create api for the particular module
+  create-middleware|m               Create a module/global middleware for the specific endpoint
+  create-module|cm <moduleName...>  Create a new module in the apis
+  create-service|cs                 Create a module/global services
+  create-function|cf                Create a module/global function
+  help [command]                    display help for command
+```
+
+```bash
+$ framework --version
+# Will gives you the current version of the cli
+```
