@@ -20,5 +20,9 @@
     "shelljs": "^0.8.4"
   },
   "devDependencies": {},
-  "description": ""
+  "description": "",
+  "repository":{
+    "type":"git",
+    "url": "https://github.com/NavneetPal/customclicommand.git"
+  }
 }
